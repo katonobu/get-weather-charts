@@ -5,6 +5,7 @@ import tempfile
 import zipfile
 import shutil
 import markdown
+import webbrowser
 
 # 設定項目
 GITHUB_TOKEN = "github_pat_access_token"  # ここにGitHubのアクセストークンを設定
@@ -53,10 +54,16 @@ if response.status_code == 200:
                 md_text += f'- [{title}](./{title}/index.html)\n'
             # weather_chartsディレクトリにindex.htmlを作成
             html_text = markdown.markdown(md_text)
-            with open(os.path.join(os.path.dirname(__file__), "weather_charts", "index.html"), "w", encoding="utf-8") as f:
+            top_html_path = os.path.join(os.path.dirname(__file__), "weather_charts", "index.html")
+            with open(top_html_path, "w", encoding="utf-8") as f:
                 f.write(html_text)
             print(f'{len(dirs)} artifacts downloaded and extracted successfully.')
+            # デフォルトブラウザでHTMLファイルを開く
+            webbrowser.open("file://" + os.path.abspath(top_html_path))
+
     else:
         print("No artifacts found.")
 else:
     print(f"Error: {response.status_code}, {response.text}")
+
+print("Done.")
