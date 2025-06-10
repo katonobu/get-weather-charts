@@ -11,7 +11,7 @@ if __name__ == "__main__":
     release_duration_minutes = 40
 
     md_text = '<a id="top"></a>\n'
-    print(f'Start at {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}(JST)')
+    print(f'Start at {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
 
     # 短期予報解説資料を取得
     print("Getting 短期予報解説資料...")
@@ -139,9 +139,9 @@ if __name__ == "__main__":
 
             md_text += f'## 画像\n'
             md_text += f'[ページトップ](#top)\n'
-            md_text += f'<img width="100%" height="auto" style="border: 2px solid black;" id="tanki_yoho" src="tanki_yoho.svg"></img>\n'
+            md_text += f'<img width="100%" height="auto" style="border: 2px solid black;" id="tanki_yoho" src="kaisetsu_tanki.svg"></img>\n'
             md_text += f'[ページトップ](#top)\n'
-            md_text += f'<img width="100%" height="auto" style="border: 2px solid black;" id="zikkyo_chijo" src="zikkyo_chijo.svg"></img>\n'
+            md_text += f'<img width="100%" height="auto" style="border: 2px solid black;" id="zikkyo_chijo" src="ASAS.svg"></img>\n'
             md_text += gazo_md_text
             md_text += f'[ページトップ](#top)\n'
 
@@ -152,7 +152,7 @@ if __name__ == "__main__":
 
             shutil.make_archive("output", format='zip', root_dir=os.path.dirname(output_base_dir), base_dir=os.path.basename(output_base_dir))
             print(f'Output saved to {output_base_dir} and output.zip')
-            print(f'Finished at {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}(JST)')
+            print(f'Finished at {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
             exit(0)
         else:
             print(f'Output directory {output_base_dir} already exists. Skipping output generation.')
