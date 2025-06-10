@@ -1,7 +1,7 @@
 import os
 import datetime
 import shutil
-from get_svg_from_pdf_url import get_svg_from_pdf_url, get_released_datetime, get_svg_from_url
+from get_svg_from_pdf_url import get_svg_from_pdf_url, get_svg_from_url, extract_date
 
 if __name__ == "__main__":
     import markdown
@@ -10,7 +10,7 @@ if __name__ == "__main__":
     release_duration_hour = 6
     release_duration_minutes = 40
 
-    md_text = ""
+    md_text = '<a id="top"></a>\n'
 
     # 短期予報解説資料を取得
     tanki_obj = get_svg_from_pdf_url("https://www.data.jma.go.jp/yoho/data/jishin/kaisetsu_tanki_latest.pdf")
@@ -19,8 +19,9 @@ if __name__ == "__main__":
         # textから発表日時を取得
         title_str = tanki_obj["pages"][0]["texts"].split("\n")[0]
         md_text += f'# {title_str.split()[0].replace("1","")}\n'
-        md_text += f'## {title_str.split()[1]}\n'
-        released_datetime = get_released_datetime(tanki_obj["pages"][0]["texts"])
+        reported_at_str = title_str.split()[1]
+        md_text += f'## {reported_at_str}\n'
+        released_datetime = extract_date(reported_at_str)
         print(released_datetime)
 
         # 参照元の観測時刻のUTC時刻を生成
@@ -30,12 +31,13 @@ if __name__ == "__main__":
         print(utc_snapshot_datetime)
 
         output_base_dir = os.path.join(os.path.dirname(__file__), released_datetime.strftime('%Y%m%d_%H%M'))
-        if not os.path.exists(output_base_dir):
+        if True:
+#        if not os.path.exists(output_base_dir):
             # 発表時刻名のディレクトリを掘る
             os.makedirs(output_base_dir, exist_ok=True)
 
             md_text += f'## 画像個別リンク\n'
-            md_text += '<ul>'
+            md_text += '<ul>\n'
 
             if "svg" in tanki_obj["pages"][0]:
                 # 短期予報のsvgを保存
@@ -85,21 +87,24 @@ if __name__ == "__main__":
                     with open(svg_path_name, "w", encoding="utf-8") as f:
                         f.write(obj["pages"][0]["svg"])
                     md_text += f'<li><a href="{url_file_obj["name"]}" target="_blank">{url_file_obj["title"]}</a></li>\n'
+                    gazo_md_text += f'[ページトップ](#top)\n'
                     gazo_md_text += f'<img width="100%" height="auto" style="border: 2px solid black;" id="{url_file_obj["name"].replace(".svg","")}" src="{url_file_obj["name"]}"></img>\n'
 
             md_text += '</ul>'
+
             md_text += '## ページ内画像リンク\n'
             md_text += '- [短期予報解説資料](#tanki_yoho)\n'
             md_text += '- [実況天気図（アジア太平洋域）](#zikkyo_chijo)\n'
-            md_text += '- [アジア500hPa・300hPa高度・気温・風・等風速線天気図](#300_500_hpa)\n'
-            md_text += '- [アジア850hPa・700hPa高度・気温・風・湿数天気図](#800_750_hpa)\n'
-            md_text += '- [極東850hPa気温・風、700hPa上昇流／500hPa高度・渦度天気図](#850_700_500)\n'
-            md_text += '- [高層断面図（風・気温・露点等）東経130度／140度解析](#cross_section)\n'
+            for item in url_filename_objs:
+                md_text += f'- [{item["title"]}](#{item["name"].replace(".svg","").replace(".png","")})\n'
+
             md_text += f'## 画像\n'
+            md_text += f'[ページトップ](#top)\n'
             md_text += f'<img width="100%" height="auto" style="border: 2px solid black;" id="tanki_yoho" src="tanki_yoho.svg"></img>\n'
+            md_text += f'[ページトップ](#top)\n'
             md_text += f'<img width="100%" height="auto" style="border: 2px solid black;" id="zikkyo_chijo" src="zikkyo_chijo.svg"></img>\n'
             md_text += gazo_md_text
-
+            md_text += f'[ページトップ](#top)\n'
 
             html_text = markdown.markdown(md_text)
             html_path_name = os.path.join(output_base_dir, "index.html")
