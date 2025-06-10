@@ -1,0 +1,33 @@
+name: Run Python Script
+
+on:
+    schedule:
+      - cron: '0 21 * * *' # 日本時間 6:00 (UTC 21:00)
+      - cron: '0 9 * * *'  # 日本時間 18:00 (UTC 9:00)
+
+jobs:
+  run_script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Python script
+        run: python script.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: output-zip
+          path: output.zip
