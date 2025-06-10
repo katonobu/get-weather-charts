@@ -1,6 +1,7 @@
 name: Run get_weather_chart
 
 on:
+    workflow_dispatch: # 手動実行を許可
     schedule:
       - cron: '0 21 * * *' # 日本時間 6:00 (UTC 21:00)
       - cron: '0 9 * * *'  # 日本時間 18:00 (UTC 9:00)
