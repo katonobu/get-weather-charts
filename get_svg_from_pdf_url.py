@@ -34,15 +34,12 @@ def get_svg_from_pdf_url(pdf_url):
     result_obj.update({"result":True})
     return result_obj
 
-
-def get_released_datetime(texts):
-    text_lines = texts.split("\n")
-    if text_lines[0].startswith("短期予報解説資料"):
-        released_at_str = text_lines[0].split()[-1]
-        normalized_str = unicodedata.normalize("NFKC", released_at_str)
-        if re.match(r"^\d{4}年\d{1,2}月\d{1,2}日\d{1,2}時\d{2}分発表$", normalized_str):
-            released_at = datetime.datetime.strptime(normalized_str, "%Y年%m月%d日%H時%M分発表")
-    return released_at
+def extract_date(released_at_str):
+    normalized_str = unicodedata.normalize("NFKC", released_at_str)
+    if re.match(r"^\d{4}年\d{1,2}月\d{1,2}日\d{1,2}時\d{2}分発表$", normalized_str):
+        released_at = datetime.datetime.strptime(normalized_str, "%Y年%m月%d日%H時%M分発表")
+        return released_at
+    return None
 
 def get_svg_from_url(svg_url):
     result_obj = {
