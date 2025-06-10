@@ -1,4 +1,4 @@
-name: Run get_short_range_prediction
+name: Run get_long_range_prediction
 
 on:
     workflow_dispatch: # 手動実行を許可
