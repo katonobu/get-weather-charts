@@ -11,8 +11,10 @@ if __name__ == "__main__":
     release_duration_minutes = 40
 
     md_text = '<a id="top"></a>\n'
+    print(f'Start at {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}(JST)')
 
     # 短期予報解説資料を取得
+    print("Getting 短期予報解説資料...")
     tanki_obj = get_svg_from_pdf_url("https://www.data.jma.go.jp/yoho/data/jishin/kaisetsu_tanki_latest.pdf")
     # textが抽出されていたら
     if tanki_obj["result"] and 0 < len(tanki_obj["pages"]) and "texts" in tanki_obj["pages"][0]:
@@ -22,13 +24,13 @@ if __name__ == "__main__":
         reported_at_str = title_str.split()[1]
         md_text += f'## {reported_at_str}\n'
         released_datetime = extract_date(reported_at_str)
-        print(released_datetime)
+        print(f'Published at {released_datetime}(JST)')
 
         # 参照元の観測時刻のUTC時刻を生成
         td = datetime.timedelta(hours = jst_hour_diff+release_duration_hour, minutes=release_duration_minutes)
         utc_snapshot_datetime = released_datetime - td
         get_utc_time_str = utc_snapshot_datetime.strftime("%Y%m%d%H%M")
-        print(utc_snapshot_datetime)
+        print(f'Based     on {utc_snapshot_datetime}(UTC)')
 
         output_base_dir = os.path.join(os.path.dirname(__file__), released_datetime.strftime('%Y%m%d_%H%M'))
         if True:
@@ -41,45 +43,82 @@ if __name__ == "__main__":
 
             if "svg" in tanki_obj["pages"][0]:
                 # 短期予報のsvgを保存
-                tanki_yoho_svg_path_name = os.path.join(output_base_dir, "tanki_yoho.svg")
+                tanki_yoho_svg_path_name = os.path.join(output_base_dir, "kaisetsu_tanki.svg")
                 with open(tanki_yoho_svg_path_name, "w", encoding="utf-8") as f:
                     f.write(tanki_obj["pages"][0]["svg"])
-                md_text += '<li><a href="tanki_yoho.svg" target="_blank">短期予報解説資料</a></li>\n'
+                md_text += '<li><a href="kaisetsu_tanki.svg" target="_blank">短期予報解説資料</a></li>\n'
 
             # 実況天気図（アジア太平洋域）
             zikkyo_chijo_svg_url = f'https://www.data.jma.go.jp/yoho/data/wxchart/quick/{released_datetime.strftime("%Y%m")}/ASAS_MONO_{get_utc_time_str}.svgz'
+            print("  Getting ASAS 実況天気図（アジア太平洋域）...")
             zikkyo_chijo_obj = get_svg_from_url(zikkyo_chijo_svg_url)
             if zikkyo_chijo_obj["result"] and "svg" in zikkyo_chijo_obj:
-                zikkyo_chijo_svg_path_name = os.path.join(output_base_dir, "zikkyo_chijo.svg")
+                zikkyo_chijo_svg_path_name = os.path.join(output_base_dir, "ASAS.svg")
                 with open(zikkyo_chijo_svg_path_name, "w", encoding="utf-8") as f:
                     f.write(zikkyo_chijo_obj["svg"].decode(encoding='utf-8'))
-                md_text += '<li><a href="zikkyo_chijo.svg" target="_blank">実況天気図（アジア太平洋域）</a></li>\n'
+                md_text += '<li><a href="ASAS.svg" target="_blank">実況天気図（アジア太平洋域）</a></li>\n'
 
             get_utc_hour_str = get_utc_time_str[8:10]
             url_filename_objs = [
                 {
                     "url":f'https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupq35_{get_utc_hour_str}.pdf',
-                    "name":"300_500_hpa.svg",
+                    "name":"AUPQ35.svg",
                     "title":"アジア500hPa・300hPa高度・気温・風・等風速線天気図"
                 },
                 {
                     "url":f'https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupq78_{get_utc_hour_str}.pdf',
-                    "name":"800_750_hpa.svg",
+                    "name":"AUPQ78.svg",
                     "title":"アジア850hPa・700hPa高度・気温・風・湿数天気図"
                 },
                 {
                     "url":f'https://www.jma.go.jp/bosai/numericmap/data/nwpmap/axfe578_{get_utc_hour_str}.pdf',
-                    "name":"850_700_500.svg",
+                    "name":"AXFE578.svg",
                     "title":"極東850hPa気温・風、700hPa上昇流／500hPa高度・渦度天気図"
                 },
                 {
                     "url":f'https://www.jma.go.jp/bosai/numericmap/data/nwpmap/axjp140_{get_utc_hour_str}.pdf',
-                    "name":"cross_section.svg",
+                    "name":"AXJP130_AXJP140.svg",
                     "title":"高層断面図（風・気温・露点等）東経130度／140度解析"
-                }
+                },
+                {
+                    "url":'https://www.data.jma.go.jp/yoho/data/wxchart/quick/FSAS24_MONO_ASIA.pdf',
+                    "name":"FSAS24.svg",
+                    "title":"アジア太平洋域 24時間"
+                },
+                {
+                    "url":'https://www.data.jma.go.jp/yoho/data/wxchart/quick/FSAS48_MONO_ASIA.pdf',
+                    "name":"FSAS48.svg",
+                    "title":"アジア太平洋域 48時間"
+                },
+                {
+                    "url":f'https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe502_{get_utc_hour_str}.pdf',
+                    "name":"FXFE502.svg",
+                    "title":"極東地上気圧・風・降水量／500hPa高度・渦度予想図 12・24時間"
+                },
+                {
+                    "url":f'https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe504_{get_utc_hour_str}.pdf',
+                    "name":"FXFE504.svg",
+                    "title":"極東地上気圧・風・降水量／500hPa高度・渦度予想図 36・48時間"
+                },
+                {
+                    "url":f'https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe5782_{get_utc_hour_str}.pdf',
+                    "name":"FXFE5782.svg",
+                    "title":"極東850hPa気温・風、700hPa上昇流／700hPa湿数、500hPa気温予想図 12・24時間"
+                },
+                {
+                    "url":f'https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe5784_{get_utc_hour_str}.pdf',
+                    "name":"FXFE5784.svg",
+                    "title":"極東850hPa気温・風、700hPa上昇流／700hPa湿数、500hPa気温予想図 36・48時間"
+                },
+                {
+                    "url":f'https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxjp854_{get_utc_hour_str}.pdf',
+                    "name":"FXJP854.svg",
+                    "title":"日本850hPa相当温位・風予想図 12・24・36・48時間"
+                },
             ]
             gazo_md_text = ""
             for url_file_obj in url_filename_objs:
+                print(f'  Getting {url_file_obj["name"].replace(".svg","").replace(".png","")} {url_file_obj["title"]}...')
                 obj = get_svg_from_pdf_url(url_file_obj["url"])
                 if obj["result"] and 0 < len(obj["pages"]) and "svg" in obj["pages"][0]:
                     obj["pages"][0]["svg"]
@@ -112,3 +151,12 @@ if __name__ == "__main__":
                 f.write(html_text)
 
             shutil.make_archive("output", format='zip', root_dir=os.path.dirname(output_base_dir), base_dir=os.path.basename(output_base_dir))
+            print(f'Output saved to {output_base_dir} and output.zip')
+            print(f'Finished at {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}(JST)')
+            exit(0)
+        else:
+            print(f'Output directory {output_base_dir} already exists. Skipping output generation.')
+            exit(1)
+    else:
+        print("Failed to get 短期予報解説資料 or no text found.")
+        exit(1)
