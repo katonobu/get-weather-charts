@@ -34,7 +34,7 @@ if __name__ == "__main__":
             # 発表時刻名のディレクトリを掘る
             os.makedirs(output_base_dir, exist_ok=True)
 
-            md_text += f'## リンク\n'
+            md_text += f'## 画像個別リンク\n'
             md_text += '<ul>'
 
             if "svg" in tanki_obj["pages"][0]:
@@ -85,12 +85,19 @@ if __name__ == "__main__":
                     with open(svg_path_name, "w", encoding="utf-8") as f:
                         f.write(obj["pages"][0]["svg"])
                     md_text += f'<li><a href="{url_file_obj["name"]}" target="_blank">{url_file_obj["title"]}</a></li>\n'
-                    gazo_md_text += f'![{url_file_obj["title"]}]({url_file_obj["name"]})\n'
-                
+                    gazo_md_text += f'<img width="100%" height="auto" style="border: 2px solid black;" id="{url_file_obj["name"].replace(".svg","")}" src="{url_file_obj["name"]}"></img>\n'
+
             md_text += '</ul>'
+            md_text += '## ページ内画像リンク\n'
+            md_text += '- [短期予報解説資料](#tanki_yoho)\n'
+            md_text += '- [実況天気図（アジア太平洋域）](#zikkyo_chijo)\n'
+            md_text += '- [アジア500hPa・300hPa高度・気温・風・等風速線天気図](#300_500_hpa)\n'
+            md_text += '- [アジア850hPa・700hPa高度・気温・風・湿数天気図](#800_750_hpa)\n'
+            md_text += '- [極東850hPa気温・風、700hPa上昇流／500hPa高度・渦度天気図](#850_700_500)\n'
+            md_text += '- [高層断面図（風・気温・露点等）東経130度／140度解析](#cross_section)\n'
             md_text += f'## 画像\n'
-            md_text += '![短期予報解説資料](tanki_yoho.svg)\n'
-            md_text += '![実況天気図（アジア太平洋域）](zikkyo_chijo.svg)\n'
+            md_text += f'<img width="100%" height="auto" style="border: 2px solid black;" id="tanki_yoho" src="tanki_yoho.svg"></img>\n'
+            md_text += f'<img width="100%" height="auto" style="border: 2px solid black;" id="zikkyo_chijo" src="zikkyo_chijo.svg"></img>\n'
             md_text += gazo_md_text
 
 
