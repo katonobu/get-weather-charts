@@ -99,4 +99,4 @@ if __name__ == "__main__":
             with open(html_path_name, "w", encoding="utf-8") as f:
                 f.write(html_text)
 
-            shutil.make_archive("output", format='zip', root_dir=output_base_dir)
+            shutil.make_archive("output", format='zip', root_dir=os.path.dirname(output_base_dir), base_dir=os.path.basename(output_base_dir))
