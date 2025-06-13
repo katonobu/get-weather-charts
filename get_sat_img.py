@@ -6,11 +6,12 @@ from selenium.webdriver.chrome.options import Options
 
 def get_element(driver, xpath, retry_count = 10, retry_interval = 1):
     """指定されたXPathの要素を取得する。見つからない場合はNoneを返す。"""
-    for _ in range(retry_count):
+    for count in range(retry_count):
         try:
             element = driver.find_element("xpath", xpath)
             if element:
-                print("O")
+                if 0 < count:
+                    print("O")
                 return element
         except Exception as e:
             print(f"Error finding elements with xpath '{xpath}': {e}")
@@ -58,10 +59,10 @@ def get_sat_img(url, driver, output_dir, file_name_suffix = None, req_click_coun
     for _ in range(max_prev_click_count):
         # 左キー押下
         driver.find_element("tag name", "body").send_keys(Keys.LEFT)
-        print("Clicked")
         click_count += 1
 
         if req_click_count <= click_count:
+            print("Clicked")
             wait_with_dots("Prev button clicked, waiting for page to load", retry_count=5, retry_interval=1)
             selected_time_ele = get_element(driver, '//*[@id="unitmap-slidervalue"]/div/span')
             selected_date_time_ele = get_element(driver, '//*[@id="unitmap-infotime"]')
@@ -85,12 +86,14 @@ def get_sat_img(url, driver, output_dir, file_name_suffix = None, req_click_coun
                 if file_name_suffix:
                     date_time_str += f'_{file_name_suffix}'
                 file_name = os.path.join(output_dir, f'{date_time_str}.png')
+                wait_with_dots("Before capture, wait for 5sec", retry_count=5, retry_interval=1)
 #                //*[@id="unitmap-header"]/nav/div[4]/div[3]                
                 print(f'save to {file_name}')
                 driver.save_screenshot(file_name)
                 output_file_paths.append(file_name)
                 break
         else:
+            print('.', end="", flush=True)
             time.sleep(1)
     result_obj.update({
         "result": True,
