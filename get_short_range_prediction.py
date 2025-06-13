@@ -153,9 +153,8 @@ if __name__ == "__main__":
             file_name = os.path.basename(output_file_path)
             md_text += f'<li><a href="{file_name}" target="_blank">{ele_name_to_japanese(capture_result["file_name_suffix"])}</a></li>\n'
             gazo_md_text += f'[ページトップ](#top)\n'
-            gazo_md_text += f'<img width="100%" height="auto" style="border: 2px solid black;" id="sat_{capture_result["file_name_suffix"]}" src="{file_name}"></img>\n'            
-
-        md_text += '</ul>'
+            gazo_md_text += f'<img width="100%" height="auto" style="border: 2px solid black;" id="sat_{capture_result["file_name_suffix"]}" src="{file_name}"></img>\n'
+        md_text += '</ul>\n\n'
 
         md_text += '## ページ内画像リンク\n'
         md_text += '- [短期予報解説資料](#tanki_yoho)\n'
