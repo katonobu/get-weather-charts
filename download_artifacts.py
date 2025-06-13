@@ -1,6 +1,7 @@
 import os
 import glob
 import json
+import datetime
 import requests
 import tempfile
 import zipfile
@@ -46,8 +47,9 @@ if __name__ == "__main__":
 
     # レスポンスを処理
     if response.status_code == 200:
-        artifacts = response.json().get("artifacts", [])
-        if artifacts:
+        loaded_artifacts = response.json().get("artifacts", [])
+        if loaded_artifacts:
+            artifacts = sorted(loaded_artifacts, key=lambda x: datetime.datetime.strptime(x['created_at'], "%Y-%m-%dT%H:%M:%SZ"))
             with tempfile.TemporaryDirectory() as temp_dir:
                 print(f'{len(artifacts)} artifacts found. Downloading and extracting...')
                 for artifact in artifacts:
