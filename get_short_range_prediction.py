@@ -173,6 +173,9 @@ if __name__ == "__main__":
         md_text += f'<img width="100%" height="auto" style="border: 2px solid black;" id="zikkyo_chijo" src="ASAS.svg"></img>\n'
         md_text += gazo_md_text
         md_text += f'[ページトップ](#top)\n'
+        md_path_name = os.path.join(output_base_dir, "index.md")
+        with open(md_path_name, "w", encoding="utf-8") as f:
+            f.write(md_text)
 
         html_text = markdown.markdown(md_text)
         html_path_name = os.path.join(output_base_dir, "index.html")
