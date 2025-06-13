@@ -4,7 +4,7 @@ import datetime
 import shutil
 from get_svg_from_pdf_url import get_svg_from_pdf_url, get_svg_from_url, extract_date
 from get_sat_img import get_sat_imgs, ele_name_to_japanese
-from get_lader_png import get_lader_png
+from get_rader_png import get_rader_png
 
 if __name__ == "__main__":
     import markdown
@@ -134,10 +134,11 @@ if __name__ == "__main__":
                 gazo_md_text += f'<img width="100%" height="auto" style="border: 2px solid black;" id="{url_file_obj["name"].replace(".svg","")}" src="{url_file_obj["name"]}"></img>\n'
 
         # レーダー画像取得
-        rain_lader_png_path = get_lader_png(get_utc_time_str[:10], output_base_dir)
-        md_text += f'<li><a href="{os.path.basename(rain_lader_png_path)}" target="_blank">レーダー画像</a></li>\n'
+        yyyymmddhh_utc_str = get_utc_time_str[:10]
+        rain_rader_png_path = get_rader_png(yyyymmddhh_utc_str, output_base_dir)
+        md_text += f'<li><a href="{os.path.basename(rain_rader_png_path)}" target="_blank">レーダー画像({yyyymmddhh_utc_str})</a></li>\n'
         gazo_md_text += f'[ページトップ](#top)\n'
-        gazo_md_text += f'<img width="100%" height="auto" style="border: 2px solid black;" id="rain_lader_png" src="{os.path.basename(rain_lader_png_path)}"></img>\n'
+        gazo_md_text += f'<img width="100%" height="auto" style="border: 2px solid black;" id="rain_rader_png" src="{os.path.basename(rain_rader_png_path)}"></img>\n'
 
         # 衛星画像取得
         result_obj = get_sat_imgs(
@@ -161,7 +162,7 @@ if __name__ == "__main__":
         md_text += '- [実況天気図（アジア太平洋域）](#zikkyo_chijo)\n'
         for item in url_filename_objs:
             md_text += f'- [{item["title"]}](#{item["name"].replace(".svg","").replace(".png","")})\n'
-        md_text += f'- [レーダー画像](#rain_lader_png)\n'
+        md_text += f'- [レーダー画像({yyyymmddhh_utc_str})](#rain_rader_png)\n'
         for capture_result in result_obj["capture_results"]:
             md_text += f'- [{ele_name_to_japanese(capture_result["file_name_suffix"])}](#sat_{capture_result["file_name_suffix"]})\n'
 

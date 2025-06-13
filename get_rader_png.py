@@ -41,7 +41,7 @@ def combie_border_rain_image(border_path, rain_path, output_path):
     white_background.save(output_path)
 
 
-def get_lader_png(yyyymmddhh_utc_str, output_dir):
+def get_rader_png(yyyymmddhh_utc_str, output_dir):
     output_path = None
     if re.match(r'^\d{10}$', yyyymmddhh_utc_str) is not None:
         os.makedirs(output_dir, exist_ok=True)
@@ -77,7 +77,7 @@ def get_lader_png(yyyymmddhh_utc_str, output_dir):
     return output_path
 
 
-def get_lader_png_by_utc_date(yyyymmdd_str):
+def get_rader_png_by_utc_date(yyyymmdd_str):
     if re.match(r'^\d{8}$', yyyymmdd_str) is None:
         raise ValueError("Invalid date format. Expected format: YYYYMMDD")
 
@@ -133,5 +133,5 @@ if __name__ == "__main__":
         utc_target_date = (now_jst - timedelta(days=2)).date()
 
     yyyymmdd_str = utc_target_date.strftime("%Y%m%d")
-    output_dir = get_lader_png_by_utc_date(yyyymmdd_str)
+    output_dir = get_rader_png_by_utc_date(yyyymmdd_str)
     shutil.make_archive("output", format='zip', root_dir=os.path.dirname(output_dir), base_dir=os.path.basename(output_dir))
