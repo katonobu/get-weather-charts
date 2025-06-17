@@ -46,13 +46,12 @@ def get_svg_from_url(svg_url):
          "result":False,
          "url":svg_url,
          "response_ok":False,
-         "svg":None
     }
 
     response = requests.get(svg_url)
     result_obj.update({"response_ok":response.ok})
-    response.raise_for_status()  # HTTPエラーがあれば例外を発生させる
-    result_obj.update({"svg":response.content})
-    result_obj.update({"result":True})
+    if response.ok:
+        result_obj.update({"svg":response.content})
+        result_obj.update({"result":True})
     return result_obj
 
