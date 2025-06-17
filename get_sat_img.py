@@ -42,18 +42,6 @@ def get_sat_img(url, driver, output_dir, file_name_suffix = None, req_click_coun
     # ページの読み込み待機
     wait_with_dots("Waiting for page to load", retry_count=5, retry_interval=retry_interval)
 
-    # 要素が見つかるまで待機
-    selected_time_ele = get_element(driver, '//*[@id="unitmap-slidervalue"]/div/span')
-    selected_date_time_ele = get_element(driver, '//*[@id="unitmap-infotime"]')
-    if selected_time_ele is None or selected_date_time_ele is None:
-        print("can't find button or selected time or selected date time element.")
-        result_obj.update({"result": False, "error": "Element not found"})
-        return result_obj
-
-    selected_time = selected_time_ele.text
-    selected_date_time = selected_date_time_ele.text
-    result_obj.update({"init_time":selected_time})
-    print(selected_time, selected_date_time)
     click_count = 0
     found_click_count = 0
     for _ in range(max_prev_click_count):
@@ -73,6 +61,8 @@ def get_sat_img(url, driver, output_dir, file_name_suffix = None, req_click_coun
 
             selected_time = selected_time_ele.text
             selected_date_time = selected_date_time_ele.text
+            if click_count == 1:
+                result_obj.update({"init_time":selected_time})
             print(selected_time, selected_date_time)
             if selected_time.endswith("09:00:00") or selected_time.endswith("21:00:00"):
                 found_click_count = click_count
