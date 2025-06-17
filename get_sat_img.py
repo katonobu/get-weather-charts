@@ -42,15 +42,12 @@ def get_sat_img(url, driver, output_dir, file_name_suffix = None, req_click_coun
     # ページの読み込み待機
     wait_with_dots("Waiting for page to load", retry_count=5, retry_interval=retry_interval)
 
-    click_count = 0
     found_click_count = 0
-    for _ in range(max_prev_click_count):
-        # 左キー押下
-        driver.find_element("tag name", "body").send_keys(Keys.LEFT)
-        click_count += 1
+    for click_count in range(max_prev_click_count):
 
         if req_click_count <= click_count:
-            print("Clicked")
+            if 0 < click_count:
+                print("Clicked")
             wait_with_dots("Prev button clicked, waiting for page to load", retry_count=5, retry_interval=1)
             selected_time_ele = get_element(driver, '//*[@id="unitmap-slidervalue"]/div/span')
             selected_date_time_ele = get_element(driver, '//*[@id="unitmap-infotime"]')
@@ -61,7 +58,7 @@ def get_sat_img(url, driver, output_dir, file_name_suffix = None, req_click_coun
 
             selected_time = selected_time_ele.text
             selected_date_time = selected_date_time_ele.text
-            if click_count == 1:
+            if click_count == 0:
                 result_obj.update({"init_time":selected_time})
             print(selected_time, selected_date_time)
             if selected_time.endswith("09:00:00") or selected_time.endswith("21:00:00"):
@@ -85,6 +82,10 @@ def get_sat_img(url, driver, output_dir, file_name_suffix = None, req_click_coun
         else:
             print('.', end="", flush=True)
             time.sleep(1)
+
+        # 左キー押下
+        driver.find_element("tag name", "body").send_keys(Keys.LEFT)
+
     result_obj.update({
         "result": True,
         "output_file_paths": output_file_paths,
