@@ -3,8 +3,8 @@ import json
 import datetime
 import shutil
 from get_svg_from_pdf_url import get_svg_from_pdf_url, get_svg_from_url, extract_date
-from get_sat_img import get_sat_imgs, ele_name_to_japanese
 from get_rader_png import get_rader_png
+from get_sat_image import get_sat_images
 
 if __name__ == "__main__":
     import markdown
@@ -26,7 +26,7 @@ if __name__ == "__main__":
         title_str = tanki_obj["pages"][0]["texts"].split("\n")[0]
         md_text += f'# {title_str.split()[0].replace("1","")}\n'
         reported_at_str = title_str.split()[1]
-        md_text += f'- {reported_at_str}\n'
+        md_text += f'## {reported_at_str}\n'
         released_datetime = extract_date(reported_at_str)
         print(f'Published at {released_datetime}(JST)')
 
@@ -77,21 +77,7 @@ if __name__ == "__main__":
         })
 
         # 衛星画像取得
-        result_obj = get_sat_imgs(
-            output_base_dir,
-            True,  # True # Headless mode
-        )
-        with open(os.path.join(output_base_dir, "get_sat_imgs_result.json"), "w", encoding="utf-8") as f:
-            json.dump(result_obj, f, ensure_ascii=False, indent=2)
-
-        for capture_result in result_obj["capture_results"]:
-            output_file_path = capture_result["output_file_paths"][0]
-            file_name = os.path.basename(output_file_path)
-            file_infos.append({
-                "id":f'sat_{capture_result["file_name_suffix"]}',
-                "name":file_name,
-                "title":ele_name_to_japanese(capture_result["file_name_suffix"])
-            })
+        file_infos += get_sat_images(output_base_dir, yyyymmddhh_utc_str+"0000")
 
         # 現況高層天気図
         get_utc_hour_str = get_utc_time_str[8:10]
@@ -186,13 +172,13 @@ if __name__ == "__main__":
                 })
 
        
-        md_text += '### ページ内画像リンク\n'
+        md_text += '## ページ内画像リンク\n'
         for file_info in file_infos:
             md_text += f'- [{file_info["title"]}](#{file_info["id"]})\n'
         md_text += '\n\n'
 
-        md_text += '### 画像\n'
-        md_text += f'[ページトップ](#top)\n'
+        md_text += '## 画像\n'
+        md_text += f'[ページトップ](#top)\n\n'
         for file_info in file_infos:
             md_text += f'<a href="{file_info["name"]}" target="_blank" id="{file_info["id"]}">{file_info["title"]}</a>\n'
             md_text += f'<img width="100%" height="auto" style="border: 2px solid black;" src="{file_info["name"]}"></img>\n'
