@@ -1,13 +1,12 @@
 import os
-import json
-import datetime
 import shutil
-from get_svg_from_pdf_url import get_svg_from_pdf_url, get_svg_from_url, extract_date
-from get_rader_png import get_rader_png
+import datetime
+import markdown
 from get_sat_image import get_sat_images
+from get_rader_png import get_rader_png
+from get_svg_from_pdf_url import get_svg_from_pdf_url, get_svg_from_url, extract_date
 
 if __name__ == "__main__":
-    import markdown
 
     jst_hour_diff = 9
     release_duration_hour = 6
@@ -145,11 +144,10 @@ if __name__ == "__main__":
             print(f'  Getting {url_file_obj["name"].replace(".svg","").replace(".png","")} {url_file_obj["title"]}...')
             obj = get_svg_from_pdf_url(url_file_obj["url"])
             if obj["result"] and 0 < len(obj["pages"]) and "svg" in obj["pages"][0]:
-                obj["pages"][0]["svg"]
-                svg_path_name = os.path.join(output_base_dir, url_file_obj["name"])
+                file_name = url_file_obj["name"]
+                svg_path_name = os.path.join(output_base_dir, file_name)
                 with open(svg_path_name, "w", encoding="utf-8") as f:
                     f.write(obj["pages"][0]["svg"])
-                file_name = url_file_obj["name"]
                 file_infos.append({
                     "id":file_name.replace(".svg","").replace(".png",""),
                     "name":file_name,
@@ -160,17 +158,15 @@ if __name__ == "__main__":
             print(f'  Getting {url_file_obj["name"].replace(".svg","").replace(".png","")} {url_file_obj["title"]}...')
             obj = get_svg_from_pdf_url(url_file_obj["url"])
             if obj["result"] and 0 < len(obj["pages"]) and "svg" in obj["pages"][0]:
-                obj["pages"][0]["svg"]
-                svg_path_name = os.path.join(output_base_dir, url_file_obj["name"])
+                file_name = url_file_obj["name"]
+                svg_path_name = os.path.join(output_base_dir, file_name)
                 with open(svg_path_name, "w", encoding="utf-8") as f:
                     f.write(obj["pages"][0]["svg"])
-                file_name = url_file_obj["name"]
                 file_infos.append({
                     "id":file_name.replace(".svg","").replace(".png",""),
                     "name":file_name,
                     "title":url_file_obj["title"]
                 })
-
        
         md_text += '## ページ内画像リンク\n'
         for file_info in file_infos:
