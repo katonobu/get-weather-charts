@@ -13,6 +13,7 @@ if __name__ == "__main__":
     release_duration_hour = 6
     release_duration_minutes = 40
 
+    file_infos = []
     md_text = '<a id="top"></a>\n'
     print(f'Start at {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
 
@@ -25,7 +26,7 @@ if __name__ == "__main__":
         title_str = tanki_obj["pages"][0]["texts"].split("\n")[0]
         md_text += f'# {title_str.split()[0].replace("1","")}\n'
         reported_at_str = title_str.split()[1]
-        md_text += f'## {reported_at_str}\n'
+        md_text += f'- {reported_at_str}\n'
         released_datetime = extract_date(reported_at_str)
         print(f'Published at {released_datetime}(JST)')
 
@@ -40,16 +41,17 @@ if __name__ == "__main__":
         # 発表時刻名のディレクトリを掘る
         os.makedirs(output_base_dir, exist_ok=True)
 
-        # 短期予報解説資料取得
-        md_text += f'## 画像個別リンク\n'
-        md_text += '<ul>\n'
-
         if "svg" in tanki_obj["pages"][0]:
             # 短期予報のsvgを保存
             tanki_yoho_svg_path_name = os.path.join(output_base_dir, "kaisetsu_tanki.svg")
             with open(tanki_yoho_svg_path_name, "w", encoding="utf-8") as f:
                 f.write(tanki_obj["pages"][0]["svg"])
-            md_text += '<li><a href="kaisetsu_tanki.svg" target="_blank">短期予報解説資料</a></li>\n'
+            file_infos.append({
+                "id":"tanki_yoho",
+                "name":"kaisetsu_tanki.svg",
+                "title":"短期予報解説資料",
+            })
+
 
         # 実況天気図（アジア太平洋域）
         zikkyo_chijo_svg_url = f'https://www.data.jma.go.jp/yoho/data/wxchart/quick/{released_datetime.strftime("%Y%m")}/ASAS_MONO_{get_utc_time_str}.svgz'
@@ -59,11 +61,41 @@ if __name__ == "__main__":
             zikkyo_chijo_svg_path_name = os.path.join(output_base_dir, "ASAS.svg")
             with open(zikkyo_chijo_svg_path_name, "w", encoding="utf-8") as f:
                 f.write(zikkyo_chijo_obj["svg"].decode(encoding='utf-8'))
-            md_text += '<li><a href="ASAS.svg" target="_blank">実況天気図（アジア太平洋域）</a></li>\n'
+            file_infos.append({
+                "id":"ASAS",
+                "name":"ASAS.svg",
+                "title":"実況天気図（アジア太平洋域）",
+            })
 
-        # 各種天気図/予報図を取得
+        # レーダー画像取得
+        yyyymmddhh_utc_str = get_utc_time_str[:10]
+        rain_rader_png_path = get_rader_png(yyyymmddhh_utc_str, output_base_dir)
+        file_infos.append({
+            "id":"rain_rader_png",
+            "name":os.path.basename(rain_rader_png_path),
+            "title":f'レーダー画像({yyyymmddhh_utc_str})'
+        })
+
+        # 衛星画像取得
+        result_obj = get_sat_imgs(
+            output_base_dir,
+            True,  # True # Headless mode
+        )
+        with open(os.path.join(output_base_dir, "get_sat_imgs_result.json"), "w", encoding="utf-8") as f:
+            json.dump(result_obj, f, ensure_ascii=False, indent=2)
+
+        for capture_result in result_obj["capture_results"]:
+            output_file_path = capture_result["output_file_paths"][0]
+            file_name = os.path.basename(output_file_path)
+            file_infos.append({
+                "id":f'sat_{capture_result["file_name_suffix"]}',
+                "name":file_name,
+                "title":ele_name_to_japanese(capture_result["file_name_suffix"])
+            })
+
+        # 現況高層天気図
         get_utc_hour_str = get_utc_time_str[8:10]
-        url_filename_objs = [
+        genkyo_objs = [
             {
                 "url":f'https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupq35_{get_utc_hour_str}.pdf',
                 "name":"AUPQ35.svg",
@@ -84,6 +116,9 @@ if __name__ == "__main__":
                 "name":"AXJP130_AXJP140.svg",
                 "title":"高層断面図（風・気温・露点等）東経130度／140度解析"
             },
+        ]
+        # 予報天気図
+        yoho_objs = [
             {
                 "url":'https://www.data.jma.go.jp/yoho/data/wxchart/quick/FSAS24_MONO_ASIA.pdf',
                 "name":"FSAS24.svg",
@@ -120,8 +155,7 @@ if __name__ == "__main__":
                 "title":"日本850hPa相当温位・風予想図 12・24・36・48時間"
             },
         ]
-        gazo_md_text = ""
-        for url_file_obj in url_filename_objs:
+        for url_file_obj in genkyo_objs:
             print(f'  Getting {url_file_obj["name"].replace(".svg","").replace(".png","")} {url_file_obj["title"]}...')
             obj = get_svg_from_pdf_url(url_file_obj["url"])
             if obj["result"] and 0 < len(obj["pages"]) and "svg" in obj["pages"][0]:
@@ -129,50 +163,41 @@ if __name__ == "__main__":
                 svg_path_name = os.path.join(output_base_dir, url_file_obj["name"])
                 with open(svg_path_name, "w", encoding="utf-8") as f:
                     f.write(obj["pages"][0]["svg"])
-                md_text += f'<li><a href="{url_file_obj["name"]}" target="_blank">{url_file_obj["title"]}</a></li>\n'
-                gazo_md_text += f'[ページトップ](#top)\n'
-                gazo_md_text += f'<img width="100%" height="auto" style="border: 2px solid black;" id="{url_file_obj["name"].replace(".svg","")}" src="{url_file_obj["name"]}"></img>\n'
+                file_name = url_file_obj["name"]
+                file_infos.append({
+                    "id":file_name.replace(".svg","").replace(".png",""),
+                    "name":file_name,
+                    "title":url_file_obj["title"]
+                })
 
-        # レーダー画像取得
-        yyyymmddhh_utc_str = get_utc_time_str[:10]
-        rain_rader_png_path = get_rader_png(yyyymmddhh_utc_str, output_base_dir)
-        md_text += f'<li><a href="{os.path.basename(rain_rader_png_path)}" target="_blank">レーダー画像({yyyymmddhh_utc_str})</a></li>\n'
-        gazo_md_text += f'[ページトップ](#top)\n'
-        gazo_md_text += f'<img width="100%" height="auto" style="border: 2px solid black;" id="rain_rader_png" src="{os.path.basename(rain_rader_png_path)}"></img>\n'
+        for url_file_obj in yoho_objs:
+            print(f'  Getting {url_file_obj["name"].replace(".svg","").replace(".png","")} {url_file_obj["title"]}...')
+            obj = get_svg_from_pdf_url(url_file_obj["url"])
+            if obj["result"] and 0 < len(obj["pages"]) and "svg" in obj["pages"][0]:
+                obj["pages"][0]["svg"]
+                svg_path_name = os.path.join(output_base_dir, url_file_obj["name"])
+                with open(svg_path_name, "w", encoding="utf-8") as f:
+                    f.write(obj["pages"][0]["svg"])
+                file_name = url_file_obj["name"]
+                file_infos.append({
+                    "id":file_name.replace(".svg","").replace(".png",""),
+                    "name":file_name,
+                    "title":url_file_obj["title"]
+                })
 
-        # 衛星画像取得
-        result_obj = get_sat_imgs(
-            output_base_dir,
-            True,  # True # Headless mode
-        )
-        with open(os.path.join(output_base_dir, "get_sat_imgs_result.json"), "w", encoding="utf-8") as f:
-            json.dump(result_obj, f, ensure_ascii=False, indent=2)
+       
+        md_text += '### ページ内画像リンク\n'
+        for file_info in file_infos:
+            md_text += f'- [{file_info["title"]}](#{file_info["id"]})\n'
+        md_text += '\n\n'
 
-
-        for capture_result in result_obj["capture_results"]:
-            output_file_path = capture_result["output_file_paths"][0]
-            file_name = os.path.basename(output_file_path)
-            md_text += f'<li><a href="{file_name}" target="_blank">{ele_name_to_japanese(capture_result["file_name_suffix"])}</a></li>\n'
-            gazo_md_text += f'[ページトップ](#top)\n'
-            gazo_md_text += f'<img width="100%" height="auto" style="border: 2px solid black;" id="sat_{capture_result["file_name_suffix"]}" src="{file_name}"></img>\n'
-        md_text += '</ul>\n\n'
-
-        md_text += '## ページ内画像リンク\n'
-        md_text += '- [短期予報解説資料](#tanki_yoho)\n'
-        md_text += '- [実況天気図（アジア太平洋域）](#zikkyo_chijo)\n'
-        for item in url_filename_objs:
-            md_text += f'- [{item["title"]}](#{item["name"].replace(".svg","").replace(".png","")})\n'
-        md_text += f'- [レーダー画像({yyyymmddhh_utc_str})](#rain_rader_png)\n'
-        for capture_result in result_obj["capture_results"]:
-            md_text += f'- [{ele_name_to_japanese(capture_result["file_name_suffix"])}](#sat_{capture_result["file_name_suffix"]})\n'
-
-        md_text += f'## 画像\n'
+        md_text += '### 画像\n'
         md_text += f'[ページトップ](#top)\n'
-        md_text += f'<img width="100%" height="auto" style="border: 2px solid black;" id="tanki_yoho" src="kaisetsu_tanki.svg"></img>\n'
-        md_text += f'[ページトップ](#top)\n'
-        md_text += f'<img width="100%" height="auto" style="border: 2px solid black;" id="zikkyo_chijo" src="ASAS.svg"></img>\n'
-        md_text += gazo_md_text
-        md_text += f'[ページトップ](#top)\n'
+        for file_info in file_infos:
+            md_text += f'<a href="{file_info["name"]}" target="_blank" id="{file_info["id"]}">{file_info["title"]}</a>\n'
+            md_text += f'<img width="100%" height="auto" style="border: 2px solid black;" src="{file_info["name"]}"></img>\n'
+            md_text += f'[ページトップ](#top)\n\n'
+
         md_path_name = os.path.join(output_base_dir, "index.md")
         with open(md_path_name, "w", encoding="utf-8") as f:
             f.write(md_text)
