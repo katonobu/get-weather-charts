@@ -53,6 +53,19 @@ if __name__ == "__main__":
                 "title":"週間予報支援図"
             }
         ]
+        yoho_objs = [
+            {
+                "url":'https://www.data.jma.go.jp/yoho/data/wxchart/quick/FSAS24_MONO_ASIA.pdf',
+                "name":"FSAS24.svg",
+                "title":"アジア太平洋域 24時間"
+            },
+            {
+                "url":'https://www.data.jma.go.jp/yoho/data/wxchart/quick/FSAS48_MONO_ASIA.pdf',
+                "name":"FSAS48.svg",
+                "title":"アジア太平洋域 48時間"
+            },
+
+        ]
         for url_file_obj in url_filename_objs:
             print(f'  Getting {url_file_obj["name"].replace(".svg","").replace(".png","")} {url_file_obj["title"]}...')
             obj = get_svg_from_url(url_file_obj["url"])
@@ -66,6 +79,21 @@ if __name__ == "__main__":
                     "name":file_name,
                     "title":url_file_obj["title"]
                 })
+
+        for url_file_obj in yoho_objs:
+            print(f'  Getting {url_file_obj["name"].replace(".svg","").replace(".png","")} {url_file_obj["title"]}...')
+            obj = get_svg_from_pdf_url(url_file_obj["url"])
+            if obj["result"] and 0 < len(obj["pages"]) and "svg" in obj["pages"][0]:
+                file_name = url_file_obj["name"]
+                svg_path_name = os.path.join(output_base_dir, file_name)
+                with open(svg_path_name, "w", encoding="utf-8") as f:
+                    f.write(obj["pages"][0]["svg"])
+                file_infos.append({
+                    "id":file_name.replace(".svg","").replace(".png",""),
+                    "name":file_name,
+                    "title":url_file_obj["title"]
+                })
+
        
         md_text += '## ページ内画像リンク\n'
         for file_info in file_infos:
