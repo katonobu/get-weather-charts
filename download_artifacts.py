@@ -11,6 +11,9 @@ import webbrowser
 
 if __name__ == "__main__":
     # 設定項目
+    # 右上のSettings > Developer settings > Fine-grained personal access tokens からトークンを取得
+    # Repository access で Only select repositoriesを選択して、DropDownlistでget-weather-chartsを選択
+    # Permissions で Actions > Read-only を選択
     GITHUB_TOKEN = "github_pat_access_token"  # ここにGitHubのアクセストークンを設定
     OWNER = "katonobu"
     REPO = "get-weather-charts"
