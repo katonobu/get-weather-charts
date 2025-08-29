@@ -31,3 +31,4 @@ jobs:
         with:
           name: long-range-output-zip
           path: output.zip
+          retention-days: 15
