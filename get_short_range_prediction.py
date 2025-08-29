@@ -184,7 +184,24 @@ if __name__ == "__main__":
         with open(md_path_name, "w", encoding="utf-8") as f:
             f.write(md_text)
 
-        html_text = markdown.markdown(md_text)
+        html_text = """
+<!doctype html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>短期予報解説資料</title>
+</head>
+
+<body>
+"""    
+        html_text += markdown.markdown(md_text)
+        html_text += """
+</body>
+</html>
+"""
+
         html_path_name = os.path.join(output_base_dir, "index.html")
         with open(html_path_name, "w", encoding="utf-8") as f:
             f.write(html_text)
