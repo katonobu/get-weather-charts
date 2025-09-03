@@ -4,14 +4,13 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>短期予報解説資料&各種天気図</title>
+    <title>短期/週間予報解説資料&各種天気図</title>
 </head>
 
 <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <p><a id="top"></a></p>
     <h1>短期予報解説資料&各種天気図</h1>
-    <h2>ページ内画像リンク</h2>
     <ul>
         <li><a href="#tanki_yoho">短期予報解説資料</a></li>
         <li><a href="#ASAS">実況天気図（アジア太平洋域）</a></li>
@@ -42,6 +41,14 @@
             <li><a href="#FXJP854_12">日本850hPa相当温位・風予想図 12・24・36・48時間</a></li>
         </ul>
     </ul>
+    <h1>週間天気予報解説資料&各種支援図</h1>
+    <ul>
+        <li><a href="#syukan_yoho">週間天気予報解説資料</a></li>
+        <li><a href="#FZCX50">週間予報支援図(アンサンブル)</a></li>
+        <li><a href="#FXXN519">週間予報支援図</a></li>
+    </ul>        
+
+    <h1>短期予報解説資料&各種天気図</h1>
     <h2>画像</h2>
     <p><a href="#top">ページトップ</a></p>
     <p><a href="https://www.data.jma.go.jp/yoho/data/jishin/kaisetsu_tanki_latest.pdf" target="_blank"
@@ -214,6 +221,24 @@
         <a href="#top">ページトップ</a>
     </p>
 
+    <h1>週間天気予報解説資料&各種支援図</h1>
+    <h2>画像</h2>
+    <p><a href="https://www.data.jma.go.jp/yoho/data/jishin/kaisetsu_shukan_latest.pdf" target="_blank"
+            id="syukan_yoho">週間天気予報解説資料</a></li>
+        <canvas width="100%" height="auto" style="border: 2px solid black;" id="syukan_yoho-pdf-canvas"></canvas>
+        <a href="#top">ページトップ</a>
+    </p>
+    <p><a href="https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fzcx50.png" target="_blank"
+            id="FZCX50">週間予報支援図(アンサンブル)</a></li>
+        <img width="100%" height="auto" style="border: 2px solid black;" id="FXFE5784" src="https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fzcx50.png"></img>
+        <a href="#top">ページトップ</a>
+    </p>
+    <p><a href="https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxxn519.png" target="_blank"
+            id="FXXN519">週間予報支援図</a></li>
+        <img width="100%" height="auto" style="border: 2px solid black;" id="FXFE5784" src="https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxxn519.png"></img>
+        <a href="#top">ページトップ</a>
+    </p>
+
     <script>
         function get_pdf_and_draw(url, canvas_id) {
             pdfjsLib.getDocument(url).promise.then(pdf => {
@@ -230,7 +255,7 @@
                     // スケールを適用したviewportを取得
                     const viewport = page.getViewport({ scale });
 
-                    console.log(canvas_id)
+//                    console.log(canvas_id)
                     // Canvasのサイズを設定
                     const canvas = document.getElementById(canvas_id);
                     const context = canvas.getContext('2d');
@@ -354,6 +379,10 @@
             {
                 "url": 'https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxjp854_12.pdf',
                 "canvas_id": "FXJP854_12-pdf-canvas"
+            },
+            {
+                "url": 'https://www.data.jma.go.jp/yoho/data/jishin/kaisetsu_shukan_latest.pdf',
+                "canvas_id": "syukan_yoho-pdf-canvas"
             },
         ];
         for (param of canvas_and_urls) {
