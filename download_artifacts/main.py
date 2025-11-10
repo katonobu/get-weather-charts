@@ -6,15 +6,15 @@ import requests
 import tempfile
 import zipfile
 import shutil
-import markdown
-import webbrowser
+
+from keyring_util import get_github_token
 
 if __name__ == "__main__":
     # 設定項目
     # 右上のSettings > Developer settings > Fine-grained personal access tokens からトークンを取得
     # Repository access で Only select repositoriesを選択して、DropDownlistでget-weather-chartsを選択
     # Permissions で Actions > Read-only を選択
-    GITHUB_TOKEN = "github_pat_access_token"  # ここにGitHubのアクセストークンを設定
+    GITHUB_TOKEN = get_github_token()
     OWNER = "katonobu"
     REPO = "get-weather-charts"
     API_URL = f"https://api.github.com/repos/{OWNER}/{REPO}/actions/artifacts"
@@ -84,7 +84,24 @@ if __name__ == "__main__":
                                     zip_ref.extractall(temp_dir)
                                 with zipfile.ZipFile(os.path.join(temp_dir, "output.zip"), "r") as zip_ref:
                                     zip_ref.extractall(temp_dir)
-                                os.remove(os.path.join(temp_dir, "output.zip"))
+                                downloaded_dirs = [item for item in glob.glob(os.path.join(temp_dir, "*")) if os.path.isdir(item)]
+                                if len(downloaded_dirs) == 1:
+                                    dir = downloaded_dirs[0]
+                                    title = os.path.basename(dir)
+                                    print(f'Extracting {title}')
+                                    shutil.copytree(dir, os.path.join(output_dir, title), dirs_exist_ok=True)
+                                    shutil.rmtree(dir)
+                                    # artifact_ids.jsonを更新
+                                    with open(artifact_ids_file, "w", encoding="utf-8") as f:
+                                        json.dump(list(artifact_ids), f, ensure_ascii=False, indent=2)
+                                else:
+                                    print('Unexpected number of extracted directories.')
+                                    break
+                                # delete dirs
+                                [shutil.rmtree(dir) for dir in downloaded_dirs if os.path.isdir(dir)]
+                                # delete files
+                                [os.remove(item) for item in glob.glob(os.path.join(temp_dir, "*")) if os.path.isfile(item)]
+                                pass
                             else:
                                 print(f"Error downloading {artifact['name']}: {response.status_code}, {response.text}")
                                 continue
@@ -92,43 +109,7 @@ if __name__ == "__main__":
                             print(f'Skipping {artifact["name"]} {artifact["created_at"]} id:{artifact["id"]} (already downloaded).')
                     else:
                         print(f'Skipping {artifact["name"]} (not in download list or missing ID/archive URL).')
-                # temp_dir内のディレクトリを取得
-                downloaded_dirs = [item for item in glob.glob(os.path.join(temp_dir, "*")) if os.path.isdir(item)]
-                for dir in downloaded_dirs:
-                    title = os.path.basename(dir)
-                    shutil.copytree(dir, os.path.join(output_dir, title), dirs_exist_ok=True)
-                # Markdownテキストを作成
-                md_text = "# 一覧\n\n"
-                all_dirs = [item for item in glob.glob(os.path.join(output_dir, "*")) if os.path.isdir(item)]
-                all_dirs.sort(reverse=True)  # 新しい順にソート
-                for dir in all_dirs:
-                    year = os.path.basename(dir)[:4]
-                    month = os.path.basename(dir)[4:6]
-                    day = os.path.basename(dir)[6:8]
-                    hour =os.path.basename(dir)[9:11]  
-                    min = os.path.basename(dir)[11:13]
-                    time_stamp_str = f'{year}年{month}月{day}日 {hour}時{min}分'
-                    # ディレクトリ名が00で終わっていたら
-                    if dir.endswith("00"):
-                        title = f'{time_stamp_str} 週間天気予報解説資料'
-                    else:
-                        title = f'{time_stamp_str} 短期予報解説資料'
-                    # ディレクトリ名をタイトルとして使用
-                    md_text += f'- <a href="./{os.path.basename(dir)}/index.html" target="_blank">{title}</a>\n'
 
-                # output_dirにindex.htmlを作成
-                html_text = markdown.markdown(md_text)
-                top_html_path = os.path.join(output_dir, "index.html")
-                with open(top_html_path, "w", encoding="utf-8") as f:
-                    f.write(html_text)
-                print(f'{len(downloaded_dirs)} artifacts downloaded and extracted successfully.')
-                print(f'{len(all_dirs)} artifacts are ready to see.')
-                # デフォルトブラウザでHTMLファイルを開く
-                webbrowser.open("file://" + os.path.abspath(top_html_path))
-
-            # artifact_ids.jsonを更新
-            with open(artifact_ids_file, "w", encoding="utf-8") as f:
-                json.dump(list(artifact_ids), f, ensure_ascii=False, indent=2)
         else:
             print("No artifacts found.")
     else:
