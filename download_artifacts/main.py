@@ -1,15 +1,14 @@
 import os
 import glob
-import json
 import datetime
 import requests
 import tempfile
 import zipfile
 import shutil
 
-from keyring_util import get_github_token
+from io_util import get_github_token, get_artifact_ids, copy_output, append_artifact_info
 
-if __name__ == "__main__":
+def download_artifacts():
     # 設定項目
     # 右上のSettings > Developer settings > Fine-grained personal access tokens からトークンを取得
     # Repository access で Only select repositoriesを選択して、DropDownlistでget-weather-chartsを選択
@@ -27,23 +26,7 @@ if __name__ == "__main__":
 
     download_artifact_names = ["long-range-output-zip", "short-range-output-zip"]
 
-    # 出力ディレクトリ定義
-    output_dir = os.path.join(os.path.dirname(__file__), "weather_charts")
-    if not os.path.isdir(output_dir):
-        # 出力ディレクトリが存在しない場合は作成
-        os.makedirs(output_dir, exist_ok=True)
-
-    # artifact_ids.json定義
-    artifact_ids_file = os.path.join(output_dir, "artifact_ids.json")
-    # artifact_ids.jsonが存在しない場合は空のリストを作成
-    if not os.path.isfile(artifact_ids_file):
-        # 出力ディレクトリにartifact_ids.jsonが存在しない場合は作成
-        with open(artifact_ids_file, "w", encoding="utf-8") as f:
-            f.write("[]")
-
-    # artifact_ids.jsonを読み込む
-    with open(artifact_ids_file, "r", encoding="utf-8") as f:
-        artifact_ids = set(json.load(f))
+    artifact_ids = get_artifact_ids()
 
     # APIリクエストを送信
     response = requests.get(API_URL, headers=headers)
@@ -55,13 +38,11 @@ if __name__ == "__main__":
             artifacts = sorted(loaded_artifacts, key=lambda x: datetime.datetime.strptime(x['created_at'], "%Y-%m-%dT%H:%M:%SZ"))
             with tempfile.TemporaryDirectory() as temp_dir:
                 print(f'{len(artifacts)} artifacts found. Downloading and extracting...')
-                for artifact in artifacts[:min(10, len(artifacts))]:
+                for artifact in artifacts:#[:min(10, len(artifacts))]:
     #                print(json.dumps(artifact, indent=2, ensure_ascii=False))
                     if artifact["name"] in download_artifact_names and "id" in artifact and "archive_download_url" in artifact:
                         # アーティファクトのIDがまだ保存されていない場合
                         if artifact["id"] not in artifact_ids:
-                            # 新しいアーティファクトのIDを追加
-                            artifact_ids.add(artifact["id"])
 
                             print(f'{artifact["name"]} : {artifact["created_at"]} ({artifact["size_in_bytes"]} bytes) id:{artifact["id"]}')
                             archive_url = artifact["archive_download_url"]
@@ -86,14 +67,13 @@ if __name__ == "__main__":
                                     zip_ref.extractall(temp_dir)
                                 downloaded_dirs = [item for item in glob.glob(os.path.join(temp_dir, "*")) if os.path.isdir(item)]
                                 if len(downloaded_dirs) == 1:
-                                    dir = downloaded_dirs[0]
-                                    title = os.path.basename(dir)
-                                    print(f'Extracting {title}')
-                                    shutil.copytree(dir, os.path.join(output_dir, title), dirs_exist_ok=True)
-                                    shutil.rmtree(dir)
-                                    # artifact_ids.jsonを更新
-                                    with open(artifact_ids_file, "w", encoding="utf-8") as f:
-                                        json.dump(list(artifact_ids), f, ensure_ascii=False, indent=2)
+                                    src_dir = downloaded_dirs[0]
+                                    print(f'copying output from {src_dir}...')
+                                    # 結果を出力先にコピー
+                                    copy_result_obj = copy_output(src_dir)
+
+                                    # 新しいアーティファクトのIDを追加
+                                    append_artifact_info(artifact, src_dir, copy_result_obj)
                                 else:
                                     print('Unexpected number of extracted directories.')
                                     break
@@ -116,3 +96,6 @@ if __name__ == "__main__":
         print(f"Error: {response.status_code}, {response.text}")
 
     print("Done.")
+
+if __name__ == "__main__":
+    download_artifacts()
