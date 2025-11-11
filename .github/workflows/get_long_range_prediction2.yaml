@@ -8,6 +8,9 @@ on:
 jobs:
   run_script:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write    # OIDCトークン発行に必要
+      contents: read
 
     steps:
       - name: Checkout repository
