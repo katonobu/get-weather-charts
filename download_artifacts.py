@@ -25,7 +25,7 @@ if __name__ == "__main__":
         "Accept": "application/vnd.github.v3+json"
     }
 
-    download_artifact_names = ["long-range-output-zip", "short-range-output-zip"]
+    download_artifact_names = ["long-range-output-zip2", "short-range-output-zip2"]
 
     # 出力ディレクトリ定義
     output_dir = os.path.join(os.path.dirname(__file__), "weather_charts")
@@ -82,9 +82,6 @@ if __name__ == "__main__":
                                     print("O")
                                 with zipfile.ZipFile(zip_path, "r") as zip_ref:
                                     zip_ref.extractall(temp_dir)
-                                with zipfile.ZipFile(os.path.join(temp_dir, "output.zip"), "r") as zip_ref:
-                                    zip_ref.extractall(temp_dir)
-                                os.remove(os.path.join(temp_dir, "output.zip"))
                             else:
                                 print(f"Error downloading {artifact['name']}: {response.status_code}, {response.text}")
                                 continue

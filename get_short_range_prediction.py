@@ -35,7 +35,7 @@ if __name__ == "__main__":
         get_utc_time_str = utc_snapshot_datetime.strftime("%Y%m%d%H%M")
         print(f'Based     on {utc_snapshot_datetime}(UTC)')
 
-        output_base_dir = os.path.join(os.path.dirname(__file__), released_datetime.strftime('%Y%m%d_%H%M'))
+        output_base_dir = os.path.join(os.path.dirname(__file__), "output", released_datetime.strftime('%Y%m%d_%H%M'))
 
         # 発表時刻名のディレクトリを掘る
         os.makedirs(output_base_dir, exist_ok=True)
@@ -206,8 +206,7 @@ if __name__ == "__main__":
         with open(html_path_name, "w", encoding="utf-8") as f:
             f.write(html_text)
 
-        shutil.make_archive("output", format='zip', root_dir=os.path.dirname(output_base_dir), base_dir=os.path.basename(output_base_dir))
-        print(f'Output saved to {output_base_dir} and output.zip')
+        print(f'Output saved to {output_base_dir}')
         print(f'Finished at {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
         exit(0)
     else:
