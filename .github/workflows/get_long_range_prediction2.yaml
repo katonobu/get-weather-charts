@@ -39,7 +39,9 @@ jobs:
         run: aws s3 cp output/ s3://weather-charts-viewer-gha/ --recursive
 
       - name: Upload completion flag
-        run: aws s3 cp /dev/null s3://weather-charts-viewer-gha/upload_done.flag
+        run: |
+          touch upload_done.flag
+          aws s3 cp upload_done.flag s3://weather-charts-viewer-gha/upload_done.flag        
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
