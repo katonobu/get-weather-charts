@@ -1,12 +1,11 @@
 import os
 import time
-import shutil
 import datetime
 
 if __name__ == "__main__":
-    print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    print(f'Started at {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
 
-    output_base_dir = os.path.join(os.path.dirname(__file__), datetime.datetime.now().strftime('%Y%m%d_%H%M'))
+    output_base_dir = os.path.join(os.path.dirname(__file__), "output",datetime.datetime.now().strftime('%Y%m%d_%H%M'))
     # 発表時刻名のディレクトリを掘る
     os.makedirs(output_base_dir, exist_ok=True)
 
@@ -16,7 +15,5 @@ if __name__ == "__main__":
             f.write(f"This is test file {i+1}.\n")
         time.sleep(1)
 
-    shutil.make_archive("output", format='zip', root_dir=os.path.dirname(output_base_dir), base_dir=os.path.basename(output_base_dir))
-    print(f'Output saved to {output_base_dir} and output.zip')
     print(f'Finished at {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
     exit(0)
