@@ -24,7 +24,7 @@ def download_artifacts():
         "Accept": "application/vnd.github.v3+json"
     }
 
-    download_artifact_names = ["long-range-output-zip", "short-range-output-zip"]
+    download_artifact_names = ["long-range-output-zip2", "short-range-output-zip2"]
 
     artifact_ids = get_artifact_ids()
 
@@ -63,8 +63,8 @@ def download_artifacts():
                                     print("O")
                                 with zipfile.ZipFile(zip_path, "r") as zip_ref:
                                     zip_ref.extractall(temp_dir)
-                                with zipfile.ZipFile(os.path.join(temp_dir, "output.zip"), "r") as zip_ref:
-                                    zip_ref.extractall(temp_dir)
+#                                with zipfile.ZipFile(os.path.join(temp_dir, "output.zip"), "r") as zip_ref:
+#                                    zip_ref.extractall(temp_dir)
                                 downloaded_dirs = [item for item in glob.glob(os.path.join(temp_dir, "*")) if os.path.isdir(item)]
                                 if len(downloaded_dirs) == 1:
                                     src_dir = downloaded_dirs[0]
