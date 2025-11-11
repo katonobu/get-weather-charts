@@ -1,0 +1,32 @@
+name: Run test_to_s3
+
+on:
+    workflow_dispatch: # 手動実行を許可
+
+jobs:
+  run_script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Python script
+        run: python upload_to_s3.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: short-range-output-zip
+          path: output.zip
+          retention-days: 15
