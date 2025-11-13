@@ -1,11 +1,11 @@
 import os
-import shutil
+import json
 import datetime
 import markdown
 from get_sat_image import get_sat_images
 from get_rader_png import get_rader_png
 from get_svg_from_pdf_url import get_svg_from_pdf_url, get_svg_from_url, extract_date
-
+from extract_text import parse_tanki_yoho_kaisetsu
 if __name__ == "__main__":
 
     jst_hour_diff = 9
@@ -50,6 +50,11 @@ if __name__ == "__main__":
                 "name":"kaisetsu_tanki.svg",
                 "title":"短期予報解説資料",
             })
+            tanki_yoho_text_path_name = os.path.join(output_base_dir, "kaisetsu_tanki.json")
+            text_objs = parse_tanki_yoho_kaisetsu(tanki_yoho_svg_path_name)
+            with open(tanki_yoho_text_path_name, "w", encoding="utf-8") as f:
+                json.dump(text_objs, f, indent=2, ensure_ascii=False)
+
 
 
         # 実況天気図（アジア太平洋域）
