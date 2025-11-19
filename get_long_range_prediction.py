@@ -1,8 +1,74 @@
 import os
-import shutil
+import json
 import datetime
 import markdown
 from get_svg_from_pdf_url import get_svg_from_pdf_url, get_svg_from_url, extract_date
+
+def parse_text(text):
+    results = []
+    lines = text.split("\n")
+    sentences = []
+    stt = "idle"
+    for line in lines:
+        print(line)
+        if stt == "idle":
+            if line == "週間天気予報解説資料":
+                stt = "header"
+                name = line.strip()
+            elif line.endswith("利⽤ください。)"):
+                stt = "forecast"
+                name = line.split("(")[0].replace("◆","").strip()
+            elif line.startswith("＜主要じょう乱の概要"):
+                stt = "disturbance"
+                name = line.strip()
+        elif stt == "header":
+            if line.endswith("発表"):
+                sentences.append(line.strip())
+            elif line == "気象庁":
+                sentences.append(line.strip())
+            elif line.startswith("予報期間") and line.endswith("まで") and stt == "header":
+                stt = "idle"
+                sentences.append(line.strip())
+                results.append({
+                    "name":name,
+                    "sentences":sentences
+                })
+                sentences = []
+        elif stt == "forecast":
+            if line.startswith("天気") or line.startswith("晴") or line.startswith("曇り") or line.startswith("⾬") or line.startswith("雪"):
+                pass
+            elif line.endswith("今期間のポイント"):
+                stt = "idle"
+                results.append({
+                    "name":name,
+                    "sentences":sentences
+                })
+                sentences = []
+            else:
+                sentences.append(line.strip())
+        elif stt == "disturbance":
+            if line.startswith("＜防災事項"):
+                stt = "disaster"
+                results.append({
+                    "name":name,
+                    "sentences":sentences
+                })
+                name = "＜防災事項＞"
+                sentences = []
+            else:
+                sentences.append(line.strip())
+        elif stt == "disaster":
+            if line.startswith("※最新の"):
+                stt = "idle"
+                results.append({
+                    "name":name,
+                    "sentences":sentences
+                })
+                name = ""
+                sentences = []
+            else:
+                sentences.append(line.strip())
+    return results
 
 if __name__ == "__main__":
 
@@ -16,10 +82,12 @@ if __name__ == "__main__":
     # textが抽出されていたら
     if weekly_obj["result"] and 0 < len(weekly_obj["pages"]) and "texts" in weekly_obj["pages"][0]:
         # textから発表日時を取得
+        text_objs = parse_text(weekly_obj["pages"][0]["texts"])
+#        print(json.dumps(), indent=2, ensure_ascii=False))        
         title_str = weekly_obj["pages"][0]["texts"].split("\n")[0]
-        md_text += f'# {title_str}\n'
+        md_text += f'# {text_objs[0]["name"]}\n'
         reported_at_str = weekly_obj["pages"][0]["texts"].split("\n")[1]
-        md_text += f'## {reported_at_str}\n'
+        md_text += f'## {text_objs[0]["sentences"][0]}\n'
         released_datetime = extract_date(reported_at_str)
         print(f'Published at {released_datetime}(JST)')
 
@@ -132,6 +200,22 @@ if __name__ == "__main__":
         html_path_name = os.path.join(output_base_dir, "index.html")
         with open(html_path_name, "w", encoding="utf-8") as f:
             f.write(html_text)
+
+        text_path_name = os.path.join(output_base_dir, "syukan_yuoho.json")
+        with open(text_path_name, "w", encoding="utf-8") as f:
+            json.dump(text_objs, f, ensure_ascii=False, indent=2)
+
+        # メタデータ生成
+        meta_obj = {
+            "title": text_objs[0]["name"],
+            "released_at_j":text_objs[0]["sentences"][0],
+            "released_at": released_datetime.strftime('%Y-%m-%d %H:%M:%S'),
+            "files": file_infos
+        }
+        metadata_path_name = os.path.join(output_base_dir, "metadata.json")
+        with open(metadata_path_name, "w", encoding="utf-8") as f:
+            json.dump(meta_obj, f, indent=2, ensure_ascii=False)
+
 
         print(f'Output saved to {output_base_dir}')
         print(f'Finished at {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')

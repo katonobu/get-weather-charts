@@ -220,7 +220,8 @@ if __name__ == "__main__":
 
         # メタデータ生成
         meta_obj = {
-            "title": text_objs[0]["sentences"][0],
+            "title": text_objs[0]["name"],
+            "released_at_j":text_objs[0]["sentences"][0],
             "released_at": released_datetime.strftime('%Y-%m-%d %H:%M:%S'),
             "based_on_utc": utc_snapshot_datetime.strftime('%Y-%m-%d %H:%M:%S'),
             "files": file_infos
