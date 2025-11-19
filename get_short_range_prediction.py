@@ -50,12 +50,6 @@ if __name__ == "__main__":
                 "name":"kaisetsu_tanki.svg",
                 "title":"短期予報解説資料",
             })
-            tanki_yoho_text_path_name = os.path.join(output_base_dir, "kaisetsu_tanki.json")
-            text_objs = parse_tanki_yoho_kaisetsu(tanki_yoho_svg_path_name)
-            with open(tanki_yoho_text_path_name, "w", encoding="utf-8") as f:
-                json.dump(text_objs, f, indent=2, ensure_ascii=False)
-
-
 
         # 実況天気図（アジア太平洋域）
         zikkyo_chijo_svg_url = f'https://www.data.jma.go.jp/yoho/data/wxchart/quick/{released_datetime.strftime("%Y%m")}/ASAS_MONO_{get_utc_time_str}.svgz'
@@ -212,6 +206,29 @@ if __name__ == "__main__":
             f.write(html_text)
 
         print(f'Output saved to {output_base_dir}')
+
+        # 短期予報解説資料のテキストを抽出
+        tanki_yoho_text_path_name = os.path.join(output_base_dir, "kaisetsu_tanki.json")
+        text_objs = parse_tanki_yoho_kaisetsu(tanki_yoho_svg_path_name)
+        with open(tanki_yoho_text_path_name, "w", encoding="utf-8") as f:
+            json.dump(text_objs, f, indent=2, ensure_ascii=False)
+#        file_infos.append({
+#            "id":"tanki_yoho_text",
+#            "name":os.path.basename(tanki_yoho_text_path_name),
+#            "title":'短期予報解説資料テキスト'
+#        })
+
+        # メタデータ生成
+        meta_obj = {
+            "title": text_objs[0]["sentences"][0],
+            "released_at": released_datetime.strftime('%Y-%m-%d %H:%M:%S'),
+            "based_on_utc": utc_snapshot_datetime.strftime('%Y-%m-%d %H:%M:%S'),
+            "files": file_infos
+        }
+        metadata_path_name = os.path.join(output_base_dir, "metadata.json")
+        with open(metadata_path_name, "w", encoding="utf-8") as f:
+            json.dump(meta_obj, f, indent=2, ensure_ascii=False)
+
         print(f'Finished at {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
         exit(0)
     else:
