@@ -46,16 +46,16 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::357665575661:role/MyStaticSiteStack-GitHubActionsRole4F1BBA26-vAMRPbo4SY9Z
+          role-to-assume: arn:aws:iam::357665575661:role/PrdWeatherChartViewerStac-PrdWeatherChartViewerPrdG-i4dwZ65pF1FA
           aws-region: ap-northeast-1
 
       - name: Upload to S3
-        run: aws s3 cp output/ s3://mystaticsitestack-staticwebbucketbbbd7aae-zysfzpac2upn/ --recursive
+        run: aws s3 cp output/ s3://prdweatherchartviewerstac-prdweatherchartviewerprd-kxynbnrxh4lw/ --recursive
 
       - name: Upload completion flag
         run: |
           touch upload_done.flag
-          aws s3 cp upload_done.flag s3://mystaticsitestack-staticwebbucketbbbd7aae-zysfzpac2upn/upload_done.flag        
+          aws s3 cp upload_done.flag s3://prdweatherchartviewerstac-prdweatherchartviewerprd-kxynbnrxh4lw/upload_done.flag        
           
       - name: Upload artifact
         uses: actions/upload-artifact@v4
