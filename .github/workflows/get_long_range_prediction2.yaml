@@ -62,4 +62,4 @@ jobs:
         with:
           name: long-range-output-zip2
           path: output/
-          retention-days: 15
+          retention-days: 3
