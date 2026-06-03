@@ -1,0 +1,17 @@
+name: cleanup
+on:
+  workflow_dispatch: # 手動実行を許可
+  schedule:
+    - cron: '0 9 * * *'  # 日本時間 24:00 (UTC 9:00)
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: Mattraks/delete-workflow-runs@v2
+        with:
+          retain_days: 30
